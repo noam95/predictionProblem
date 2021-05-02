@@ -1,12 +1,12 @@
 import sqlite3
-
+import xml.etree.ElementTree as ET
 import pandas as pd
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn import svm
 from sklearn.metrics import accuracy_score
-import statistics as state
+import json
 
 def loadData(path):
     df = pd.read_csv(path)
@@ -25,6 +25,15 @@ def normelize_data(df):
     df = pd.DataFrame(x_scaled)
     return df
 
+
+def binning(col, cut_points, labels=None):
+    minval = col.min()
+    maxval = col.max()
+    break_point = [minval] + cut_points + [maxval]
+    if not labels:
+        labels = range(len(cut_points)+1)
+    colBin = pd.cut(col, bins=break_point, labels=labels, include_lowest=True)
+    return colBin
 
 def getPlayerAVGF(dat,playerApiId ,colName, tablename):
     query1= "SELECT AVG("+colName+") From " + tablename +" WHERE " + tablename +".player_api_id=" + str(playerApiId)
@@ -48,7 +57,6 @@ def getTeamAVGF(dat, colName, matchRow, tableName, teamType):
     return sumTeamF/11
 
 def getAverageFcol(matchData,dat, F, tableName):
-    matchData = matchData[250:1000]
     # data = query.fetchall()
     listHomeAvg =[]
     listAwayAvg=[]
@@ -57,42 +65,83 @@ def getAverageFcol(matchData,dat, F, tableName):
         listHomeAvg.append(home)
         away = getTeamAVGF(dat, F, row, tableName, 'away')
         listAwayAvg.append(away)
-    matchData['avghome'] = listHomeAvg
-    matchData['avgaway'] = listAwayAvg
+    home_name = F +'home'
+    away_name = F + 'away'
+    matchData[home_name] = listHomeAvg
+    matchData[away_name] = listAwayAvg
     return matchData
 
 # def htmlToDataFrame():
 
 
-dat = sqlite3.connect("database.sqlite")
-# addAverageF(dat,'39890','28/02/2009','overall_rating', 'player_Attributes')
-# getAverageFcol(dat, 'overall_rating', 'player_Attributes')
+def fromXML(table):
+    for row in table.iterrows():
+        x = row[1]['shoton']
+        root = ET.fromstring(x)
+        y = root.tag
+        z = root.attrib
+        # ET.etree.ElementTree.fromstring
+        # for child in root:
+        #     print(child.tag, child.attrib)
+        if str(table[1]['shoton']) == 'nan':
+            return 0
+        table[1]['shoton'].readxml
 
 
-df = pd.read_csv('match.csv')
-newMatch = df[
-    ['id', 'date', 'match_api_id', 'home_team_api_id', 'away_team_api_id', 'home_team_goal','away_team_goal', 'home_player_1', 'home_player_2',
-'home_player_3','home_player_4','home_player_5','home_player_6','home_player_7','home_player_8','home_player_9', 'home_player_10', 'home_player_11', 'away_player_1',
-     'away_player_2', 'away_player_3', 'away_player_4', 'away_player_5', 'away_player_6', 'away_player_7', 'away_player_8', 'away_player_9', 'away_player_10', 'away_player_11',
-     ]].copy()
-newMatch['result'] = newMatch['home_team_goal'] - newMatch['away_team_goal']
-newMatch2 = df[['home_team_api_id', 'away_team_api_id']].copy()
-getAverageFcol(newMatch, dat, 'potential', 'player_Attributes')
-getAverageFcol(newMatch, dat, 'overall_rating', 'player_Attributes')
-newMatch.to_excel(r'C:\Users\שי\Documents\shay\סמסטר ו\סדנת הכנה לפרויקט\חלק שלישי\newMatch.xlsx', index=False)
-newMatch
+def orderData():
+    dat = sqlite3.connect("database.sqlite")
+    df = pd.read_csv('match.csv')
+    newMatch = df[
+        ['id', 'date', 'match_api_id', 'home_team_api_id', 'away_team_api_id', 'home_team_goal', 'away_team_goal',
+         'home_player_1', 'home_player_2',
+         'home_player_3', 'home_player_4', 'home_player_5', 'home_player_6', 'home_player_7', 'home_player_8',
+         'home_player_9', 'home_player_10', 'home_player_11', 'away_player_1',
+         'away_player_2', 'away_player_3', 'away_player_4', 'away_player_5', 'away_player_6', 'away_player_7',
+         'away_player_8', 'away_player_9', 'away_player_10', 'away_player_11',
+         'shoton'
+         ]].copy()
+    newMatch['result'] = newMatch['home_team_goal'] - newMatch['away_team_goal']
+    # newMatch=newMatch[1750:2000]
+    newMatch = newMatch[350:500]
+    # fromXML(newMatch)
+    newMatch = getAverageFcol(newMatch, dat, 'potential', 'player_Attributes')
+    newMatch = getAverageFcol(newMatch, dat, 'overall_rating', 'player_Attributes')
+    newMatch = getAverageFcol(newMatch, dat, 'long_shots', 'player_Attributes')
+    newMatch = getAverageFcol(newMatch, dat, 'ball_control', 'player_Attributes')
+    newMatch.to_excel(r'C:\Users\שי\Documents\shay\סמסטר ו\סדנת הכנה לפרויקט\חלק שלישי\newMatch.xlsx', index=False)
+    newMatch
+
+orderData()
 
 
-norelized_df = normelize_data(newMatch)
-smaller_df = norelized_df[0:1000]
-data_np = smaller_df.to_numpy()
-print(data_np.data)
-X,y = data_np.reshape(data_np.shape[0], data_np.shape[1]), np.arange(data_np.shape[0])
-x_train,x_test,y_train,y_test = train_test_split(X, y, test_size=0.3,random_state=42)
-clf = svm.SVC(kernel='rbf')
-clf.fit(x_train, y_train)
-prediction = clf.predict(x_test)
-print(prediction)
-print(accuracy_score(y_test, prediction))
+
+# newMatch
+
+
+
+
+
+# norelized_df = normelize_data(newMatch)
+# smaller_df = norelized_df[0:1000]
+# data_np = smaller_df.to_numpy()
+# print(data_np.data)
+# X,y = data_np.reshape(data_np.shape[0], data_np.shape[1]), np.arange(data_np.shape[0])
+# x_train,x_test,y_train,y_test = train_test_split(X, y, test_size=0.3,random_state=42)
+# clf = svm.SVC(kernel='rbf')
+# clf.fit(x_train, y_train)
+# prediction = clf.predict(x_test)
+# print(prediction)
+# print(accuracy_score(y_test, prediction))
 # print("Model accurancy- " + str(91.64765)+ "%")
+
+####
+
+# newMatch['result'] = newMatch['home_team_goal'] - newMatch['away_team_goal']
+# # newMatch2 = df[['home_team_api_id', 'away_team_api_id']].copy()
+# bins= [-0.5, 0.5]
+# group_names = ['0', 'teco', '1']
+# newMatch["class_res"] = binning(newMatch['result'], bins, group_names)
+# match_class = newMatch[newMatch.class_res != 'teco']
+# # print(match_class)
+
 
