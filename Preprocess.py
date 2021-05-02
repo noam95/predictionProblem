@@ -87,11 +87,18 @@ def fromXML(table):
             return 0
         table[1]['shoton'].readxml
 
+def resultCol(df):
+    df['result'] = df['home_team_goal'] - df['away_team_goal']
+    bins= [-0.5, 0.5]
+    group_names = ['0', 'teco', '1']
+    df["class_res"] = binning(df['result'], bins, group_names)
+    df = df[df.class_res != 'teco']
+    return df
 
 def orderData():
     dat = sqlite3.connect("database.sqlite")
     df = pd.read_csv('match.csv')
-    newMatch = df[
+    df = df[
         ['id', 'date', 'match_api_id', 'home_team_api_id', 'away_team_api_id', 'home_team_goal', 'away_team_goal',
          'home_player_1', 'home_player_2',
          'home_player_3', 'home_player_4', 'home_player_5', 'home_player_6', 'home_player_7', 'home_player_8',
@@ -100,22 +107,25 @@ def orderData():
          'away_player_8', 'away_player_9', 'away_player_10', 'away_player_11',
          'shoton'
          ]].copy()
-    newMatch['result'] = newMatch['home_team_goal'] - newMatch['away_team_goal']
     # newMatch=newMatch[1750:2000]
-    newMatch = newMatch[350:500]
+    df = resultCol(df)
+    df = df[350:500]
     # fromXML(newMatch)
-    newMatch = getAverageFcol(newMatch, dat, 'potential', 'player_Attributes')
-    newMatch = getAverageFcol(newMatch, dat, 'overall_rating', 'player_Attributes')
-    newMatch = getAverageFcol(newMatch, dat, 'long_shots', 'player_Attributes')
-    newMatch = getAverageFcol(newMatch, dat, 'ball_control', 'player_Attributes')
-    newMatch.to_excel(r'C:\Users\שי\Documents\shay\סמסטר ו\סדנת הכנה לפרויקט\חלק שלישי\newMatch.xlsx', index=False)
-    newMatch
+    df = getAverageFcol(df, dat, 'potential', 'player_Attributes')
+    df = getAverageFcol(df, dat, 'overall_rating', 'player_Attributes')
+    df = getAverageFcol(df, dat, 'long_shots', 'player_Attributes')
+    df = getAverageFcol(df, dat, 'ball_control', 'player_Attributes')
+    df.to_excel(r'C:\Users\שי\Documents\shay\סמסטר ו\סדנת הכנה לפרויקט\חלק שלישי\newMatch.xlsx', index=False)
+    df = normelize_data(df)
+
+    return df
+
+
 
 orderData()
 
 
 
-# newMatch
 
 
 
