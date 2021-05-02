@@ -6,11 +6,11 @@ from sklearn.metrics import *
 
 class frame_work:
 
-    def __init__(self, model, X, y, x_test,y_test):
+    def __init__(self, model, x_train, y_train, x_test, y_test):
 
         self.model = model
-        self.y = y
-        self.X = X
+        self.x_train = x_train
+        self.y_train = y_train
         # self.x_train, self.x_test,self.y_train,self.y_test = train_test_split(X,y, test_size=0.3, random_state=42)
         self.y_test = y_test
         self.x_test = x_test
