@@ -39,6 +39,7 @@ def getPlayerAVGF(dat,playerApiId ,colName, tablename):
     query1= "SELECT AVG("+colName+") From " + tablename +" WHERE " + tablename +".player_api_id=" + str(playerApiId)
 
     # query0 = "SELECT TOP 1 * FROM (" +query1 + ") WHERE p.date< "
+    # query1 = "SELECT * From Match"
     query = dat.execute(query1)
     cols = [column[0] for column in query.description]
     # playerMeasurs = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
@@ -97,25 +98,29 @@ def resultCol(df):
 
 def orderData():
     dat = sqlite3.connect("database.sqlite")
-    df = pd.read_csv('match.csv')
-    df = df[
-        ['id', 'date', 'match_api_id', 'home_team_api_id', 'away_team_api_id', 'home_team_goal', 'away_team_goal',
-         'home_player_1', 'home_player_2',
-         'home_player_3', 'home_player_4', 'home_player_5', 'home_player_6', 'home_player_7', 'home_player_8',
-         'home_player_9', 'home_player_10', 'home_player_11', 'away_player_1',
-         'away_player_2', 'away_player_3', 'away_player_4', 'away_player_5', 'away_player_6', 'away_player_7',
-         'away_player_8', 'away_player_9', 'away_player_10', 'away_player_11',
-         'shoton'
-         ]].copy()
+    tables = "id, date, match_api_id, home_team_api_id, away_team_api_id, home_team_goal, away_team_goal, home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8, home_player_9, home_player_10, home_player_11, away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8, away_player_9, away_player_10, away_player_11, shoton"
+    query = dat.execute("SELECT " + tables + " From Match")
+    cols = [column[0] for column in query.description]
+    df = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
+    # df = pd.read_csv('match.csv')
+    # df = df[
+    #     ['id', 'date', 'match_api_id', 'home_team_api_id', 'away_team_api_id', 'home_team_goal', 'away_team_goal',
+    #      'home_player_1', 'home_player_2',
+    #      'home_player_3', 'home_player_4', 'home_player_5', 'home_player_6', 'home_player_7', 'home_player_8',
+    #      'home_player_9', 'home_player_10', 'home_player_11', 'away_player_1',
+    #      'away_player_2', 'away_player_3', 'away_player_4', 'away_player_5', 'away_player_6', 'away_player_7',
+    #      'away_player_8', 'away_player_9', 'away_player_10', 'away_player_11',
+    #      'shoton'
+    #      ]].copy()
     # newMatch=newMatch[1750:2000]
     df = resultCol(df)
-    df = df[350:500]
+    df = df[350:650]
     # fromXML(newMatch)
     df = getAverageFcol(df, dat, 'potential', 'player_Attributes')
     df = getAverageFcol(df, dat, 'overall_rating', 'player_Attributes')
     df = getAverageFcol(df, dat, 'long_shots', 'player_Attributes')
     df = getAverageFcol(df, dat, 'ball_control', 'player_Attributes')
-    df.to_excel(r'C:\Users\שי\Documents\shay\סמסטר ו\סדנת הכנה לפרויקט\חלק שלישי\newMatch.xlsx', index=False)
+    df.to_excel(r'newMatch.xlsx', index=False)
     df = normelize_data(df)
 
     return df
