@@ -4,23 +4,24 @@ from Framework import frame_work
 from Preprocess import resultCol
 import numpy as np
 import pandas as pd
+from sklearn import linear_model
+from sklearn import svm
 
 
 #call preprocess
-df = pd.read_csv('newMatch.csv')
+df = pd.read_csv('newMatch2.csv')
 df = resultCol(df)
-
-df=df.fillna(df.mean())
+df = df.fillna(df.mean())
 
 #call framework
 # train_table = df[df.season != '2015/2016']
 # test_table = df[df.season == '2015/2016']
-
 # train_table.drop('season', inplace=True, axis=1)
 # smaller_df_train = train_table[0:10000]
 data_np = df.to_numpy()
 # print(data_np.data)
-X,y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 37]
+X,y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 29]
+y = y.astype('int')
 # X_train, y_train = data_np_train.reshape(data_np_train.shape[0], data_np_train.shape[1]), data_np_train[:, 7]
 #
 #
@@ -30,26 +31,47 @@ X,y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 37]
 # X_test, y_test = data_np_test.reshape(data_np_test.shape[0], data_np_test.shape[1]), data_np_test[:, 7]
 
 '''
-#for svm:
+for svm:
 clf = svm.SVC(kernel='rbf')
 '''
-'''
-#for neural network:
-clf = MLPClassifier()
-'''
-'''
-random
-'''
-clf = RandomForestClassifier(random_state=0)
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.95, random_state=42)
+clf = svm.SVC(kernel='rbf')
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 model_test = frame_work(clf, x_train, y_train, x_test, y_test)
-model_test.run_model()
-f_importence = model_test.feature_importanc()
-model_test.matrices_classification("test")
-# clf = svm.SVC(kernel='rbf')
+model_test.run_model()  # run the commands: fit+predict
+f_importance = model_test.feature_importance()
 # clf.fit(x_train, y_train)
 # prediction = clf.predict(x_test)
 # print(prediction)
 # print(accuracy_score(y_test, prediction))
 # # print("Model accurancy- " + str(91.64765)+ "%")
+
+'''
+for neural network:
+clf = MLPClassifier()
+'''
+
+
+'''
+for random forest:
+'''
+# rand = RandomForestClassifier(random_state=0)
+# x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.7, random_state=42)
+# model_test = frame_work(rand, x_train, y_train, x_test, y_test)
+# model_test.run_model()  # run the commands: fit+predict
+# f_importance = model_test.feature_importance()
+# model_test.matrices_classification("test")
+
+'''
+for Bayesian Ridge Regression:
+'''
+# reg = linear_model.BayesianRidge()
+# x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# model_test = frame_work(reg, x_train, y_train, x_test, y_test)
+# model_test.run_model()  # run the commands: fit+predict
+# f_importance = model_test.feature_importance()
+
+
+
+
+
 
