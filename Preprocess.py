@@ -41,9 +41,11 @@ def getPlayerAVGF(dat,playerApiId ,colName, tablename):
     # query0 = "SELECT TOP 1 * FROM (" +query1 + ") WHERE p.date< "
     # query1 = "SELECT * From Match"
     query = dat.execute(query1)
-    cols = [column[0] for column in query.description]
+    # cols = [column[0] for column in query.description]
     # playerMeasurs = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
     data = query.fetchall()
+    if data[0][0] is None:
+        return 0
     return data[0][0]
 
 def getTeamAVGF_player(dat, colName, matchRow, tableName, teamType):
@@ -54,7 +56,9 @@ def getTeamAVGF_player(dat, colName, matchRow, tableName, teamType):
         if str(player_id) == 'nan':
             return 0
         sumTeamF += getPlayerAVGF(dat, player_id, colName, tableName)
-    return sumTeamF/11
+    if sumTeamF != 0:
+        return sumTeamF/11
+    return 0
 
 def getAverageFcol_players(matchData,dat, F, tableName):
     # data = query.fetchall()
@@ -129,21 +133,20 @@ def orderData():
     #      'shoton'
     #      ]].copy()
     # newMatch=newMatch[1750:2000]
-    df = resultCol(df)
     df = df[350:400]
     # fromXML(newMatch)
-    df = getAverageFcol_team(df, dat, 'defencePressure')
-    df = getAverageFcol_team(df, dat, 'buildUpPlaySpeed')
-    df = getAverageFcol_team(df, dat, 'buildUpPlayPassing')
-    df = getAverageFcol_team(df, dat, 'chanceCreationPassing')
-    df = getAverageFcol_team(df, dat, 'chanceCreationCrossing')
-    df = getAverageFcol_team(df, dat, 'chanceCreationShooting')
-    df = getAverageFcol_team(df, dat, 'defencePressure')
-    df = getAverageFcol_team(df, dat, 'defenceAggression')
-    df = getAverageFcol_team(df, dat, 'defenceTeamWidth')
-    df = getAverageFcol_players(df, dat, 'crossing', 'player_Attributes')
-    df = getAverageFcol_players(df, dat, 'finishing', 'player_Attributes')
-    df = getAverageFcol_players(df, dat, 'heading_accuracy', 'player_Attributes')
+    # df = getAverageFcol_team(df, dat, 'defencePressure')
+    # df = getAverageFcol_team(df, dat, 'buildUpPlaySpeed')
+    # df = getAverageFcol_team(df, dat, 'buildUpPlayPassing')
+    # df = getAverageFcol_team(df, dat, 'chanceCreationPassing')
+    # df = getAverageFcol_team(df, dat, 'chanceCreationCrossing')
+    # df = getAverageFcol_team(df, dat, 'chanceCreationShooting')
+    # df = getAverageFcol_team(df, dat, 'defencePressure')
+    # df = getAverageFcol_team(df, dat, 'defenceAggression')
+    # df = getAverageFcol_team(df, dat, 'defenceTeamWidth')
+    # df = getAverageFcol_players(df, dat, 'crossing', 'player_Attributes')
+    # df = getAverageFcol_players(df, dat, 'finishing', 'player_Attributes')
+    # df = getAverageFcol_players(df, dat, 'heading_accuracy', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'volleys', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'dribbling', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'curve', 'player_Attributes')
@@ -154,6 +157,7 @@ def orderData():
     df = getAverageFcol_players(df, dat, 'overall_rating', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'long_shots', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'ball_control', 'player_Attributes')
+    df = resultCol(df)
     df.to_excel(r'newMatch.xlsx', index=False)
     # df = normelize_data(df)
 
@@ -184,13 +188,5 @@ orderData()
 # print("Model accurancy- " + str(91.64765)+ "%")
 
 ####
-
-# newMatch['result'] = newMatch['home_team_goal'] - newMatch['away_team_goal']
-# # newMatch2 = df[['home_team_api_id', 'away_team_api_id']].copy()
-# bins= [-0.5, 0.5]
-# group_names = ['0', 'teco', '1']
-# newMatch["class_res"] = binning(newMatch['result'], bins, group_names)
-# match_class = newMatch[newMatch.class_res != 'teco']
-# # print(match_class)
 
 
