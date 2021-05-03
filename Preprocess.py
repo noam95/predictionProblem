@@ -221,7 +221,7 @@ def orderData():
     return df
 
 
-orderData()
+# orderData()
 
 # def getPlayerAVGF_2(df,playerApiId ,colName):
 #     df = df[df[colName] == playerApiId]
