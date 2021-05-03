@@ -1,11 +1,13 @@
 from abc import abstractmethod
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 import numpy as np
 from Preprocess import resultCol
+# import matplotlib as plt
+from matplotlib import pyplot as plt
 import openpyxl
 
 
@@ -22,6 +24,9 @@ class Strategy(object):
     @abstractmethod
     def analyze_model(self, model):
         pass
+
+    def get_x_train(self):
+        return self.x_train
 
 
 
@@ -65,11 +70,8 @@ class Context():
         return result
     #     # ...
     #
-    # def extract_to_excel(self, path):
-    #     df = self._strategy
-    #     df = pd.DataFrame([[11, 21, 31], [12, 22, 32], [31, 32, 33]],
-    #                       index=['one', 'two', 'three'], columns=['modelName', '', 'c'])
-
+    def extract_to_excel(self, path, name, columns):
+        pass
 
 
 class FrameWorkRandomForest(Strategy):
@@ -86,12 +88,10 @@ class FrameWorkRandomForest(Strategy):
         self.prediction = self.model.predict(self.x_test)
         print(accuracy_score(self.y_test, self.prediction))
         f_i = self.model.feature_importances_
-        print(self.model.metrics.average_precision_score)
+        # print(self.model.metrics.average_precision_score)
         return self.model.feature_importances_
 
 
-    def get_x_train(self):
-        return self.x_train
 
 class FrameWorkANN(Strategy):
     def __init__(self, model, x_train, y_train, x_test, y_test):
@@ -108,9 +108,33 @@ class FrameWorkANN(Strategy):
         # self.coef_ = self.model.coef_
         self.prediction = self.model.predict(self.x_test)
         print(accuracy_score(self.y_test, self.prediction))
+        f = []
+        for j in range(self.x_test.shape[1]):
+            f_j = self.get_feature_importance(j, 100)
+            f.append(f_j)
+        # Plot
+        plt.figure(figsize=(10, 5))
+        plt.bar(range(self.x_test.shape[1]), f, color="r", alpha=0.7)
+        plt.xticks(ticks=range(self.x_test.shape[1]))
+        plt.xlabel("Feature")
+        plt.ylabel("Importance")
+        plt.title("Feature importances (Iris data set)")
+        plt.show()
+        result = classification_report(self.y_test, self.prediction)
+        print(result)
 
 
-
+    def get_feature_importance(self,j, n):
+        s = accuracy_score(self.y_test, self.prediction) # baseline score
+        total = 0.0
+        for i in range(n):
+            perm = np.random.permutation(range(self.x_test.shape[0]))
+            X_test_ = self.x_test.copy()
+            X_test_[:, j] = self.x_test[perm, j]
+            self.prediction = self.model.predict(X_test_)
+            s_ij = accuracy_score(self.y_test, self.prediction)
+            total += s_ij
+        return s - total / n
 
 class FrameWorkSVM(Strategy):
     def do_algorithm(self):
@@ -138,6 +162,7 @@ class FrameWorkBayesianNetworks(Strategy):
 def checkRandomForest():
     df = pd.read_csv('newMatch.csv')
     df = resultCol(df)
+    columns = df.columns
     df.drop('date', inplace=True, axis=1)
     df.drop('shoton', inplace=True, axis=1)
     df = df.fillna(df.mean())
@@ -150,23 +175,25 @@ def checkRandomForest():
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     model_test = Context(FrameWorkRandomForest(clf, x_train, y_train, x_test, y_test))
     model_test.do_some_business_logic()
+    model_test.extract_to_excel("test.csv", "model1", columns)
 
 def checkANN():
-    df = pd.read_csv('newMatch.csv')
+    df = pd.read_csv('newMatch1.csv')
     df = resultCol(df)
-    df.drop('date', inplace=True, axis=1)
-    df.drop('shoton', inplace=True, axis=1)
+    # df.drop('date', inplace=True, axis=1)
+    df.drop('result', inplace=True, axis=1)
     df = df.fillna(df.mean())
     data_np = df.to_numpy()
-    X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 29]
+    X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 48]
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     clf = MLPClassifier()
     model_ann = Context(FrameWorkANN(clf,x_train,y_train,x_test,y_test))
     model_ann.do_some_business_logic()
 
+
 if __name__ == '__main__':
-    # checkANN()
-    checkRandomForest()
+    checkANN()
+    # checkRandomForest()
 
 
