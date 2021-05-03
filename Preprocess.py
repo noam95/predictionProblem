@@ -183,6 +183,7 @@ orderData()
 
 
 
+
 # norelized_df = normelize_data(newMatch)
 # smaller_df = norelized_df[0:1000]
 # data_np = smaller_df.to_numpy()
