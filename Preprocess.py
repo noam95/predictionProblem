@@ -12,10 +12,11 @@ def loadData(path):
     df = pd.read_csv(path)
     return df
 
-def hundleMissingValues():
+def hundleMissingValues(df):
     # for col in df:
     #     df[col].fillna(state.mode(df[col]))
     pass
+
 
 
 def normelize_data(df):
@@ -36,11 +37,11 @@ def binning(col, cut_points, labels=None):
     return colBin
 
 def getPlayerAVGF(dat,playerApiId ,colName, tablename):
-    query1= "SELECT AVG("+colName+") From " + tablename +" WHERE " + tablename +".player_api_id=" + str(playerApiId)
+    query_string = "SELECT AVG("+colName+") From " + tablename +" WHERE " + tablename +".player_api_id=" + str(playerApiId)
 
     # query0 = "SELECT TOP 1 * FROM (" +query1 + ") WHERE p.date< "
     # query1 = "SELECT * From Match"
-    query = dat.execute(query1)
+    query = dat.execute(query_string)
     # cols = [column[0] for column in query.description]
     # playerMeasurs = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
     data = query.fetchall()
@@ -50,14 +51,16 @@ def getPlayerAVGF(dat,playerApiId ,colName, tablename):
 
 def getTeamAVGF_player(dat, colName, matchRow, tableName, teamType):
     sumTeamF = 0
+    sum_player=0
     for i in range(11):
         x = teamType+ '_player_' + str(i+1)
         player_id = matchRow[1][x]
         if str(player_id) == 'nan':
             return 0
+        sum_player += 1
         sumTeamF += getPlayerAVGF(dat, player_id, colName, tableName)
     if sumTeamF != 0:
-        return sumTeamF/11
+        return sumTeamF/sum_player
     return 0
 
 def getAverageFcol_players(matchData,dat, F, tableName):
@@ -116,6 +119,13 @@ def resultCol(df):
     df = df[df.class_res != 'teco']
     return df
 
+def remove_not_data_good(df):
+    list_to_drop = ['date', 'home_player_1', 'home_player_2', 'home_player_3', 'home_player_4','home_player_6','home_player_7',
+                    'home_player_8', 'home_player_9', 'home_player_10', 'home_player_11', 'away_player_1', 'away_player_2', 'away_player_3', 'away_player_4', 'away_player_5',
+                    'away_player_6', 'away_player_7', 'away_player_8', 'away_player_10', 'away_player_11', 'result']
+    df.drop(list_to_drop, inplace=True, axis=1)
+
+
 def orderData():
     dat = sqlite3.connect("database.sqlite")
     tables = "id, date, match_api_id, home_team_api_id, away_team_api_id, home_team_goal, away_team_goal, home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8, home_player_9, home_player_10, home_player_11, away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8, away_player_9, away_player_10, away_player_11"
@@ -135,18 +145,18 @@ def orderData():
     # newMatch=newMatch[1750:2000]
     df = df[350:400]
     # fromXML(newMatch)
-    # df = getAverageFcol_team(df, dat, 'defencePressure')
-    # df = getAverageFcol_team(df, dat, 'buildUpPlaySpeed')
-    # df = getAverageFcol_team(df, dat, 'buildUpPlayPassing')
-    # df = getAverageFcol_team(df, dat, 'chanceCreationPassing')
-    # df = getAverageFcol_team(df, dat, 'chanceCreationCrossing')
-    # df = getAverageFcol_team(df, dat, 'chanceCreationShooting')
-    # df = getAverageFcol_team(df, dat, 'defencePressure')
-    # df = getAverageFcol_team(df, dat, 'defenceAggression')
-    # df = getAverageFcol_team(df, dat, 'defenceTeamWidth')
-    # df = getAverageFcol_players(df, dat, 'crossing', 'player_Attributes')
-    # df = getAverageFcol_players(df, dat, 'finishing', 'player_Attributes')
-    # df = getAverageFcol_players(df, dat, 'heading_accuracy', 'player_Attributes')
+    df = getAverageFcol_team(df, dat, 'defencePressure')
+    df = getAverageFcol_team(df, dat, 'buildUpPlaySpeed')
+    df = getAverageFcol_team(df, dat, 'buildUpPlayPassing')
+    df = getAverageFcol_team(df, dat, 'chanceCreationPassing')
+    df = getAverageFcol_team(df, dat, 'chanceCreationCrossing')
+    df = getAverageFcol_team(df, dat, 'chanceCreationShooting')
+    df = getAverageFcol_team(df, dat, 'defencePressure')
+    df = getAverageFcol_team(df, dat, 'defenceAggression')
+    df = getAverageFcol_team(df, dat, 'defenceTeamWidth')
+    df = getAverageFcol_players(df, dat, 'crossing', 'player_Attributes')
+    df = getAverageFcol_players(df, dat, 'finishing', 'player_Attributes')
+    df = getAverageFcol_players(df, dat, 'heading_accuracy', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'volleys', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'dribbling', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'curve', 'player_Attributes')
@@ -158,11 +168,10 @@ def orderData():
     df = getAverageFcol_players(df, dat, 'long_shots', 'player_Attributes')
     df = getAverageFcol_players(df, dat, 'ball_control', 'player_Attributes')
     df = resultCol(df)
+    remove_not_data_good(df)
+    df = normelize_data(df)
     df.to_excel(r'newMatch.xlsx', index=False)
-    # df = normelize_data(df)
-
     return df
-
 
 
 orderData()
