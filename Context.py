@@ -1,11 +1,13 @@
 from abc import abstractmethod
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 import numpy as np
 from Preprocess import resultCol
+from sklearn.feature_selection import chi2
 # import matplotlib as plt
 from matplotlib import pyplot as plt
 import openpyxl
@@ -115,20 +117,30 @@ class FrameWorkRandomForest(Strategy):
     #     df.to_excel(path)
 
 class FrameWorkANN(Strategy):
-    def __init__(self, model, x_train, y_train, x_test, y_test):
+    # def __init__(self, model, x_train, y_train, x_test, y_test):
+    #     self.model = model
+    #     self.x_train = x_train
+    #     self.y_train = y_train
+    #     self.x_test = x_test
+    #     self.y_test = y_test
+    #     self.prediction = None
+    #     self.coef_ = None
+    #     self.accur = None
+
+    def __init__(self, model, x, y):
         self.model = model
-        self.x_train = x_train
-        self.y_train = y_train
-        self.x_test = x_test
-        self.y_test = y_test
+        self.x = x
+        self.y = y
         self.prediction = None
         self.coef_ = None
         self.accur = None
 
     def do_algorithm(self):
-
-        self.model.fit(self.x_train, self.y_train)
+        X_new = SelectKBest(chi2, k=10).fit_transform(self.x, self.y)
+        # self.model.fit(self.x_train, self.y_train)
         # self.coef_ = self.model.coef_
+        x_train, x_test, y_train, y_test = train_test_split(X_new, self.y, test_size=0.3, random_state=42)
+        self.model.fit(x_train, y_train)
         self.prediction = self.model.predict(self.x_test)
         self.accur = accuracy_score(self.y_test, self.prediction)
         print(accuracy_score(self.y_test, self.prediction))
@@ -139,6 +151,7 @@ class FrameWorkANN(Strategy):
             optional: Feature inmportance
             :return:
             '''
+            pass
         # f = []
         # for j in range(self.x_test.shape[1]):
         #     f_j = self.get_feature_importance(j, 100)
@@ -251,7 +264,7 @@ def checkANN():
 
 
 if __name__ == '__main__':
-    # checkANN()
-    checkRandomForest()
+    checkANN()
+    # checkRandomForest()
 
 
