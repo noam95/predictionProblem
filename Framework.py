@@ -1,3 +1,5 @@
+import pandas as pd
+
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -35,3 +37,17 @@ class frame_work:
         plt.barh(range(len(names)), imp, align='center')
         plt.yticks(range(len(names)), names)
         plt.show()
+
+
+def ball_control_flot():
+    all_feat = pd.read_csv('trainData.csv')
+    x,y = plt.subplots()
+    colors = {0: 'red', 1: 'blue'}
+    y.scatter(all_feat['overall_rating_home'], all_feat['overall_rating_away'],
+              c= all_feat['class_res'].apply(lambda x:colors[x]), alpha=0.5)
+    plt.xlabel("home")
+    plt.ylabel("away")
+    plt.title("allll")
+    plt.show()
+
+ball_control_flot()
