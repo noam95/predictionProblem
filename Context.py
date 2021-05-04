@@ -11,7 +11,9 @@ from sklearn.feature_selection import chi2
 # import matplotlib as plt
 from matplotlib import pyplot as plt
 import openpyxl
-
+from sklearn.feature_selection import SelectFromModel
+import os.path
+from os import path
 
 
 class Strategy(object):
@@ -80,6 +82,11 @@ class Context():
     #
     #     df = pd.DataFrame(columns=columns,)
 
+def getTrainTest():
+    train = pd.read_csv("trainData (1).csv")
+    test = pd.read_csv("TestData (1).csv")
+    return train, test
+
 
 class FrameWorkRandomForest(Strategy):
     def __init__(self, model, x_train, y_train , x_test, y_test):
@@ -117,41 +124,42 @@ class FrameWorkRandomForest(Strategy):
     #     df.to_excel(path)
 
 class FrameWorkANN(Strategy):
-    # def __init__(self, model, x_train, y_train, x_test, y_test):
+    def __init__(self, model, x_train, y_train, x_test, y_test):
+        self.model = model
+        self.x_train = x_train
+        self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
+        self.prediction = None
+        self.coef_ = None
+        self.accur = None
+    #
+    # def __init__(self, model, x, y):
     #     self.model = model
-    #     self.x_train = x_train
-    #     self.y_train = y_train
-    #     self.x_test = x_test
-    #     self.y_test = y_test
+    #     self.x = x
+    #     self.y = y
     #     self.prediction = None
     #     self.coef_ = None
     #     self.accur = None
 
-    def __init__(self, model, x, y):
-        self.model = model
-        self.x = x
-        self.y = y
-        self.prediction = None
-        self.coef_ = None
-        self.accur = None
-
     def do_algorithm(self):
-        X_new = SelectKBest(chi2, k=10).fit_transform(self.x, self.y)
+        x_train_new = SelectKBest(chi2, k=10).fit_transform(self.x_train, self.y_train)
+        x_test_new = SelectKBest(chi2, k=10).fit_transform(self.x_test, self.y_test)
         # self.model.fit(self.x_train, self.y_train)
         # self.coef_ = self.model.coef_
-        x_train, x_test, y_train, y_test = train_test_split(X_new, self.y, test_size=0.3, random_state=42)
-        self.model.fit(x_train, y_train)
-        self.prediction = self.model.predict(self.x_test)
+        # x_train, x_test, y_train, y_test = train_test_split(X_new, self.y, test_size=0.3, random_state=42)
+        self.model.fit(x_train_new, self.y_train)
+        self.prediction = self.model.predict(x_test_new)
         self.accur = accuracy_score(self.y_test, self.prediction)
         print(accuracy_score(self.y_test, self.prediction))
         return self.accur
 
-        def getFeatureImportance():
-            '''
-            optional: Feature inmportance
-            :return:
-            '''
-            pass
+    def getFeatureImportance():
+        '''
+        optional: Feature inmportance
+        :return:
+        '''
+        pass
         # f = []
         # for j in range(self.x_test.shape[1]):
         #     f_j = self.get_feature_importance(j, 100)
@@ -221,46 +229,65 @@ class FrameWorkBayesianNetworks(Strategy):
 
 
 def checkRandomForest():
-    df = pd.read_csv('newMatch.csv')
+    # df = pd.read_csv('newMatch.csv')
     # df = resultCol(df)
-    columns = df.columns.values
+    train, test = getTrainTest()
+    columns = train.columns.values
     # df.drop('date', inplace=True, axis=1)
     # df.drop('shoton', inplace=True, axis=1)
-    df = df.fillna(df.mean())
+    # df = df.fillna(df.mean())
     # print(df.isnull().values.any())
     # print(df.dtypes)
-    data_np = df.to_numpy()
-    X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 46]
-    y = y.astype('int')
+    data_train_np = train.to_numpy()
+    data_test_np = test.to_numpy()
+    # X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 46]
+    # y = y.astype('int')
     clf = RandomForestClassifier(random_state=0)
-    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    x_train = train.iloc[:, 0:46]
+    y_train = train.iloc[:, 46]
+    x_test = test.iloc[:, 0:46]
+    y_test = test.iloc[:, 46]
+    # x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     model_test = Context(FrameWorkRandomForest(clf, x_train, y_train, x_test, y_test))
+
     accur, importance = model_test.do_some_business_logic()
     # model_test.extract_to_excel("test.csv", "model1", columns)
-    data_df = {'Model name': ["Random Forest"],
+    if path.exists("RandomDFtest.xlsx"):
+        #load the xl to df
+
+
+    else:
+        data_df = {'Model name': ["Random Forest"],
                    'Number of features': [len(columns)],
                    'Accurancy': [accur]
                    }
-    i = 0
-    for col in columns:
-        data_df[col] = importance[i]
-        i += 1
-    df = pd.DataFrame(data_df)
-    # df = pd.DataFrame(data=data_df)
-    df.to_excel("RandomDFtest.xlsx")
+        i = 0
+        for col in columns[0:46]:
+            data_df[col] = importance[i]
+            i += 1
+        df = pd.DataFrame(data_df)
+        # df = pd.DataFrame(data=data_df)
+        # df.to_excel("RandomDFtest.xlsx")
 
 def checkANN():
-    df = pd.read_csv('newMatch1.csv')
-    df = resultCol(df)
+    # df = pd.read_csv('newMatch1.csv')
+    # df = resultCol(df)
     # df.drop('date', inplace=True, axis=1)
-    df.drop('result', inplace=True, axis=1)
-    df = df.fillna(df.mean())
-    data_np = df.to_numpy()
-    X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 48]
-    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    # df.drop('result', inplace=True, axis=1)
+    # df = df.fillna(df.mean())
+    train, test = getTrainTest()
+    columns = train.columns.values
+    x_train = train.iloc[:, 0:46]
+    y_train = train.iloc[:, 46]
+    x_test = test.iloc[:, 0:46]
+    y_test = test.iloc[:, 46]
+    # data_np = df.to_numpy()
+    # X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 48]
+    # x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     clf = MLPClassifier()
     model_ann = Context(FrameWorkANN(clf,x_train,y_train,x_test,y_test))
-    model_ann.do_some_business_logic()
+    accurancy_model = model_ann.do_some_business_logic()
 
 
 if __name__ == '__main__':
