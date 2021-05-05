@@ -3,6 +3,7 @@ from sklearn.metrics import confusion_matrix, classification_report, precision_r
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 import pandas as pd
+from matplotlib import pyplot as plt
 
 from Context import Strategy, Context
 
@@ -20,6 +21,25 @@ class FrameWorkANN(Strategy):
         return self.accur
 
     def get_feature_importance(self):
+            # top =2
+        train = self.x_test.columns.values
+        features_names = list(train)
+        # features_names = ['defencePressure', 'buildUpPlaySpeed', 'buildUpPlayPassing', 'chanceCreationPassing',
+        #                   'chanceCreationCrossing',
+        #                   'chanceCreationShooting', 'defencePressure', 'defenceAggression', 'defenceTeamWidth',
+        #                   'crossing', 'finishing', 'heading_accuracy', 'volleys', 'dribbling', 'curve',
+        #                   'long_passing',
+        #                   'aggression', 'short_passing', 'potential', 'overall_rating', 'long_shots',
+        #                   'ball_control']
+        imp = self.model.coef_[0]
+        imp, features_names = zip(*sorted(zip(imp, features_names)))
+        plt.barh(range(len(features_names)), imp, align='center')
+        plt.yticks(range(len(features_names)), features_names)
+        # plt.barh(range(top), imp[::-1][0:top], align='center')
+        # plt.yticks(range(top), features_names[::-1][0:top])
+        plt.show()
+
+    def getFMeasures(self):
         mesures= precision_recall_fscore_support(self.y_test, self.prediction, average='weighted')
         self.recall =mesures[0]
         self.prec = mesures[1]
@@ -33,7 +53,8 @@ class FrameWorkANN(Strategy):
         #predictions measures
         parameters = self.param
         parameters['numOfF'] = len(columnAsList)
-        self.get_feature_importance()
+        self.getFMeasures()
+        # self.get_feature_importance()
         parameters['recall'] = self.recall
         parameters['precision'] = self.prec
         parameters['f1'] = self.f1
@@ -53,17 +74,17 @@ def checkANN():
 
     clf = MLPClassifier()
     parameter_space = {
-        'hidden_layer_sizes': [(5,10,5),(15,),(5,5,5),(8,8),(100,5,100)],
+        # 'hidden_layer_sizes': [(5,10,5),(15,),(5,5,5),(8,8),(100,5,100)],
         'activation': ['tanh', 'relu'],
-        'solver': ['sgd', 'adam'],
+        # 'solver': ['sgd', 'adam'],
         'alpha': [0.0001, 0.05],
-        'learning_rate': ['constant', 'invscaling', 'adaptive'],
-        'max_iter':[200,500]
+        # 'learning_rate': ['constant', 'invscaling', 'adaptive'],
+        # 'max_iter':[1,100]
     }
-    model = Context(FrameWorkANN(clf,'trainData26F.csv','TestData26F.csv',param=parameter_space,))
-    model.strategy.x_train = SelectKBest(chi2, k=8).fit_transform(model.strategy.x_train, model.strategy.y_train)
+    model = Context(FrameWorkANN(clf,'trainData47F.csv','TestData47F.csv',param=parameter_space))
+    model.strategy.x_train = SelectKBest(chi2, k=2).fit_transform(model.strategy.x_train, model.strategy.y_train)
     model.strategy.x_train = pd.DataFrame(model.strategy.x_train)
-    model.strategy.x_test = SelectKBest(chi2, k=8).fit_transform(model.strategy.x_test, model.strategy.y_test)
+    model.strategy.x_test = SelectKBest(chi2, k=2).fit_transform(model.strategy.x_test, model.strategy.y_test)
     model.strategy.x_test = pd.DataFrame(model.strategy.x_test)
     model.strategy.grid_search()
     model.run_model()
