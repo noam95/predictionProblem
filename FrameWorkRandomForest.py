@@ -1,6 +1,7 @@
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from Context import Strategy, Context
+from matplotlib import pyplot as plt
 
 
 class FrameWorkRandomForest(Strategy):
@@ -25,7 +26,7 @@ class FrameWorkRandomForest(Strategy):
 def checkRandomForest():
     RandomForest = RandomForestClassifier(random_state=0)
     parameter_space = []
-    model = Context(FrameWorkRandomForest(RandomForest, "TestData26F.csv", "trainData26F.csv"))
+    model = Context(FrameWorkRandomForest(RandomForest, "trainData26F_pass.csv", "TestData26F_pass.csv"))
     accurancy_model = model.run_model()
     importance = RandomForest.feature_importances_
     train = model.strategy.x_train
@@ -40,7 +41,14 @@ def checkRandomForest():
         i += 1
 
     df = pd.DataFrame(data_df)
-    model.strategy.insertDataToCSV(data_df)
-
+    # model.strategy.insertDataToCSV(df, "full_records")
+    # zip_name = zip(columns, importance)
+    # zip_name_sort = sorted(list(zip_name),key=lambda x:x[1],reverse=True)
+    # plt.bar(range(len(zip_name_sort)), [val[1] for val in zip_name], align='center')
+    # plt.xticks(range(len(zip_name)), [val[0] for val in zip_name])
+    # plt.xticks(rotation=90)
+    # plt.title("Random Forest - feature importance")
+    # plt.tight_layout()
+    # plt.show()
 
 checkRandomForest()
