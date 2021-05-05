@@ -85,7 +85,7 @@ class Context():
 def getTrainTest():
     train = pd.read_csv("trainData26F.csv")
     test = pd.read_csv("testData26F.csv")
-    Fnum = 22
+    Fnum = len(train.columns)
     return train, test, Fnum
 
 
@@ -290,7 +290,7 @@ def checkANN():
 
 
 if __name__ == '__main__':
-    checkANN()
-    # checkRandomForest()
+    # checkANN()
+    checkRandomForest()
 
 
