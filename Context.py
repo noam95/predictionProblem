@@ -9,7 +9,7 @@ import numpy as np
 from Preprocess import resultCol
 from sklearn.feature_selection import chi2
 # import matplotlib as plt
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 import openpyxl
 from sklearn.feature_selection import SelectFromModel
 import os.path
@@ -83,9 +83,10 @@ class Context():
     #     df = pd.DataFrame(columns=columns,)
 
 def getTrainTest():
-    train = pd.read_csv("trainData (1).csv")
-    test = pd.read_csv("TestData (1).csv")
-    return train, test
+    train = pd.read_csv("trainData26F.csv")
+    test = pd.read_csv("testData26F.csv")
+    Fnum = 22
+    return train, test, Fnum
 
 
 class FrameWorkRandomForest(Strategy):
@@ -102,7 +103,7 @@ class FrameWorkRandomForest(Strategy):
         self.model.fit(self.x_train, self.y_train)
         self.prediction = self.model.predict(self.x_test)
         self.accur  = accuracy_score(self.y_test, self.prediction)
-        print(accuracy_score(self.y_test, self.prediction))
+        print(self.accur)
         f_i = self.model.feature_importances_
         # print(self.model.metrics.average_precision_score)
         return self.accur, self.model.feature_importances_
@@ -143,15 +144,16 @@ class FrameWorkANN(Strategy):
     #     self.accur = None
 
     def do_algorithm(self):
-        x_train_new = SelectKBest(chi2, k=10).fit_transform(self.x_train, self.y_train)
-        x_test_new = SelectKBest(chi2, k=10).fit_transform(self.x_test, self.y_test)
-        # self.model.fit(self.x_train, self.y_train)
-        # self.coef_ = self.model.coef_
-        # x_train, x_test, y_train, y_test = train_test_split(X_new, self.y, test_size=0.3, random_state=42)
-        self.model.fit(x_train_new, self.y_train)
-        self.prediction = self.model.predict(x_test_new)
-        self.accur = accuracy_score(self.y_test, self.prediction)
-        print(accuracy_score(self.y_test, self.prediction))
+        for i in range (10):
+            # x_train_new = SelectKBest(chi2, k=15).fit_transform(self.x_train, self.y_train)
+            # x_test_new = SelectKBest(chi2, k=15).fit_transform(self.x_test, self.y_test)
+            # self.model.fit(x_train_new, self.y_train)
+            # self.prediction = self.model.predict(x_test_new)
+            self.model.fit(self.x_train, self.y_train)
+            self.prediction = self.model.predict(self.x_test)
+
+            self.accur = accuracy_score(self.y_test, self.prediction)
+            print(accuracy_score(self.y_test, self.prediction))
         return self.accur
 
     def getFeatureImportance():
@@ -231,7 +233,7 @@ class FrameWorkBayesianNetworks(Strategy):
 def checkRandomForest():
     # df = pd.read_csv('newMatch.csv')
     # df = resultCol(df)
-    train, test = getTrainTest()
+    train, test, Fnum = getTrainTest()
     columns = train.columns.values
     # df.drop('date', inplace=True, axis=1)
     # df.drop('shoton', inplace=True, axis=1)
@@ -244,10 +246,10 @@ def checkRandomForest():
     # y = y.astype('int')
     clf = RandomForestClassifier(random_state=0)
 
-    x_train = train.iloc[:, 0:46]
-    y_train = train.iloc[:, 46]
-    x_test = test.iloc[:, 0:46]
-    y_test = test.iloc[:, 46]
+    x_train = train.iloc[:, 0:Fnum-1]
+    y_train = train.iloc[:, Fnum-1]
+    x_test = test.iloc[:, 0:Fnum-1]
+    y_test = test.iloc[:, Fnum-1]
     # x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     model_test = Context(FrameWorkRandomForest(clf, x_train, y_train, x_test, y_test))
 
@@ -255,6 +257,7 @@ def checkRandomForest():
     # model_test.extract_to_excel("test.csv", "model1", columns)
     if path.exists("RandomDFtest.xlsx"):
         #load the xl to df
+        pass
 
 
     else:
@@ -263,7 +266,7 @@ def checkRandomForest():
                    'Accurancy': [accur]
                    }
         i = 0
-        for col in columns[0:46]:
+        for col in columns[0:Fnum-1]:
             data_df[col] = importance[i]
             i += 1
         df = pd.DataFrame(data_df)
@@ -271,21 +274,17 @@ def checkRandomForest():
         # df.to_excel("RandomDFtest.xlsx")
 
 def checkANN():
-    # df = pd.read_csv('newMatch1.csv')
-    # df = resultCol(df)
-    # df.drop('date', inplace=True, axis=1)
-    # df.drop('result', inplace=True, axis=1)
-    # df = df.fillna(df.mean())
-    train, test = getTrainTest()
+
+    train, test, Fnum = getTrainTest()
     columns = train.columns.values
-    x_train = train.iloc[:, 0:46]
-    y_train = train.iloc[:, 46]
-    x_test = test.iloc[:, 0:46]
-    y_test = test.iloc[:, 46]
+    x_train = train.iloc[:, 0:Fnum-1]
+    y_train = train.iloc[:, Fnum-1]
+    x_test = test.iloc[:, 0:Fnum-1]
+    y_test = test.iloc[:, Fnum-1]
     # data_np = df.to_numpy()
     # X, y = data_np.reshape(data_np.shape[0], data_np.shape[1]), data_np[:, 48]
     # x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    clf = MLPClassifier()
+    clf = MLPClassifier(hidden_layer_sizes=50)
     model_ann = Context(FrameWorkANN(clf,x_train,y_train,x_test,y_test))
     accurancy_model = model_ann.do_some_business_logic()
 
