@@ -1,4 +1,6 @@
 from abc import abstractmethod
+from pathlib import Path
+
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest
@@ -57,17 +59,21 @@ class Strategy(object):
         self.model = model_GS
 
     def insertDataToCSV(self, df,name="1"):
-        path = "plots/"+ self.ModelName +"_"+name+".csv"
-        if path.exists(path):
-            data_to_load = pd.read_csv(path)
+        file = "plots/"+ self.ModelName +"_"+name+".csv"
+        if path.exists(file):
+            data_to_load = pd.read_csv(file)
             data_to_load = pd.DataFrame(data_to_load)
             # adding to exist the new row
             data_to_load = pd.concat([data_to_load, df], axis=0, ignore_index=True)
             # data_to_load.loc[len(data_to_load.index)] = df  # op1
             # data_to_load.append(df)  # op2
-            data_to_load.to_csv(path, index=False)
+            data_to_load.to_csv(file, index=False)
         else:  # not exist yet
-            df.to_csv(path, index=False)
+            df.to_csv(file, index=False)
+
+    @abstractmethod
+    def getCsvData(self):
+        pass
 
 class Context():
 
