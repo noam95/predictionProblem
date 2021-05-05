@@ -1,3 +1,4 @@
+from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 import pandas as pd
@@ -24,26 +25,38 @@ class FrameWorkANN(Strategy):
     def getCsvData(self):
 
         train = self.x_test.columns.values
+        columnAsList = list(train)
+
         parameters = self.param
         parameters['accurancy'] = self.accur
+        parameters['numOfF'] = len(columnAsList)
+        colums = list(parameters.keys())
         df = pd.DataFrame(parameters.items()).T
-        df.columns = ['hidden_layer_sizes','activation','solver','alpha','learning_rate','accurancy']
+        df.columns =colums
         df = df.iloc[1:]
         return df
 
 
 def checkANN():
+
+
+
     clf = MLPClassifier()
     parameter_space = {
-        'hidden_layer_sizes': [(50, 50, 50), (50, 100, 50), (100,)],
+        'hidden_layer_sizes': [(5,10,5),(15,),(5,5,5),(8,8),(100,5,100)],
         'activation': ['tanh', 'relu'],
-        'solver': ['sgd', 'adam'],
+        # 'solver': ['sgd', 'adam'],
         'alpha': [0.0001, 0.05],
-        'learning_rate': ['constant', 'adaptive'],
+        # 'learning_rate': ['constant', 'invscaling', 'adaptive'],
+        'max_iter':[1,200]
     }
     model = Context(FrameWorkANN(clf,'trainData26F.csv','TestData26F.csv',param=parameter_space,))
-    # model_ann.strategy.grid_search()
-    accurancy_model = model.run_model()
+    model.strategy.x_train = SelectKBest(chi2, k=8).fit_transform(model.strategy.x_train, model.strategy.y_train)
+    model.strategy.x_train = pd.DataFrame(model.strategy.x_train)
+    model.strategy.x_test = SelectKBest(chi2, k=8).fit_transform(model.strategy.x_test, model.strategy.y_test)
+    model.strategy.x_test = pd.DataFrame(model.strategy.x_test)
+    model.strategy.grid_search()
+    model.run_model()
     data = model.strategy.getCsvData()
     model.strategy.insertDataToCSV(data, "2")
 
