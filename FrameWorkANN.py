@@ -53,11 +53,11 @@ def checkANN():
 
     clf = MLPClassifier()
     parameter_space = {
-        # 'hidden_layer_sizes': [(5,10,5),(15,),(5,5,5),(8,8),(100,5,100)],
+        'hidden_layer_sizes': [(5,10,5),(15,),(5,5,5),(8,8),(100,5,100)],
         'activation': ['tanh', 'relu'],
-        # 'solver': ['sgd', 'adam'],
+        'solver': ['sgd', 'adam'],
         'alpha': [0.0001, 0.05],
-        # 'learning_rate': ['constant', 'invscaling', 'adaptive'],
+        'learning_rate': ['constant', 'invscaling', 'adaptive'],
         'max_iter':[200,500]
     }
     model = Context(FrameWorkANN(clf,'trainData26F.csv','TestData26F.csv',param=parameter_space,))
@@ -68,7 +68,7 @@ def checkANN():
     model.strategy.grid_search()
     model.run_model()
     data = model.strategy.getCsvData()
-    model.strategy.insertDataToCSV(data, "3")
+    model.strategy.insertDataToCSV(data, "1")
 
 
 checkANN()
