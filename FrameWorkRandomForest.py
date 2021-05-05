@@ -5,8 +5,8 @@ from Context import Strategy, Context
 
 class FrameWorkRandomForest(Strategy):
 
-    def __init__(self, model, param):
-        super().__init__(model,param,"RandomForest")
+    def __init__(self, model,TrainPath,TestPath,param=None):
+        super().__init__(model,"RanfomForest",TrainPath,TestPath, param)
 
     def train(self):
         super().train()

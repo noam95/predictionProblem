@@ -1,12 +1,13 @@
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
+import pandas as pd
 
 from Context import Strategy, Context
 
 
 class FrameWorkANN(Strategy):
-    def __init__(self, model,param):
-        super().__init__(model,param,"ANN")
+    def __init__(self, model,TrainPath,TestPath,param=None):
+        super().__init__(model,"ANN",TrainPath,TestPath, param)
         self.coef_ = None
 
     def train(self):
@@ -53,6 +54,8 @@ def checkANN():
     model = Context(FrameWorkANN(clf,param=parameter_space))
     # model_ann.strategy.grid_search()
     accurancy_model = model.run_model()
+    df = pd.array([accurancy_model])
+    model.strategy.insertDataToCSV(df,"2")
 
 def checkSVC():
     clf = SVC()
