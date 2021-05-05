@@ -144,16 +144,15 @@ class FrameWorkANN(Strategy):
     #     self.accur = None
 
     def do_algorithm(self):
-        for i in range (10):
-            # x_train_new = SelectKBest(chi2, k=15).fit_transform(self.x_train, self.y_train)
-            # x_test_new = SelectKBest(chi2, k=15).fit_transform(self.x_test, self.y_test)
-            # self.model.fit(x_train_new, self.y_train)
-            # self.prediction = self.model.predict(x_test_new)
-            self.model.fit(self.x_train, self.y_train)
-            self.prediction = self.model.predict(self.x_test)
+        x_train_new = SelectKBest(chi2, k=15).fit_transform(self.x_train, self.y_train)
+        x_test_new = SelectKBest(chi2, k=15).fit_transform(self.x_test, self.y_test)
+        self.model.fit(x_train_new, self.y_train)
+        self.prediction = self.model.predict(x_test_new)
+        # self.model.fit(self.x_train, self.y_train)
+        # self.prediction = self.model.predict(self.x_test)
 
-            self.accur = accuracy_score(self.y_test, self.prediction)
-            print(accuracy_score(self.y_test, self.prediction))
+        self.accur = accuracy_score(self.y_test, self.prediction)
+        print( self.accur)
         return self.accur
 
     def getFeatureImportance():
@@ -290,7 +289,7 @@ def checkANN():
 
 
 if __name__ == '__main__':
-    # checkANN()
-    checkRandomForest()
+    checkANN()
+    # checkRandomForest()
 
 
