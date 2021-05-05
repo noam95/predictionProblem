@@ -5,13 +5,17 @@ from sklearn import svm
 from matplotlib import pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix
 import pandas as pd
+from sklearn.metrics import average_precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_recall_fscore_support
+
 
 
 class FrameWorkSVM(Strategy):
     def __init__(self, model,TrainPath,TestPath,param=None):
-        super().__init__(model,"SVM",TrainPath,TestPath, param)
-        self.recall= None
-        self.prec= None
+        super().__init__(model, "SVM", TrainPath, TestPath, param)
+        self.recall = None
+        self.prec = None
         self.f1 = None
 
     def train(self):
@@ -19,15 +23,33 @@ class FrameWorkSVM(Strategy):
         print(self.accur)
         print(confusion_matrix(self.y_test, self.prediction))
         print(classification_report(self.y_test, self.prediction))
+        precision_recall_fscore_support(self.y_test, self.prediction, average='weighted')
+        self.prec = average_precision_score(self.y_test, self.prediction)
+        self.recall = recall_score(self.y_test, self.prediction, average='micro')
         self.f_importances()
         return self.accur
 
+    def getCsvData(self):
+        parameters = self.param
+        parameters['accurancy'] = self.accur
+        df = pd.DataFrame(parameters.items()).T
+        df.columns = ['accurancy']
+        df = df.iloc[1:]
+        return df
+
+
     def f_importances(self):
-        features_names = ['ball_control', 'overall_rating']
-        imp = self.model.coef_
+        # top =2
+        features_names = ['defencePressure', 'buildUpPlaySpeed','buildUpPlayPassing','chanceCreationPassing','chanceCreationCrossing',
+                          'chanceCreationShooting', 'defencePressure', 'defenceAggression','defenceTeamWidth',
+                          'crossing', 'finishing', 'heading_accuracy', 'volleys', 'dribbling', 'curve', 'long_passing',
+                          'aggression', 'short_passing', 'potential', 'overall_rating', 'long_shots','ball_control']
+        imp = self.model.coef_[0]
         imp, features_names = zip(*sorted(zip(imp, features_names)))
         plt.barh(range(len(features_names)), imp, align='center')
         plt.yticks(range(len(features_names)), features_names)
+        # plt.barh(range(top), imp[::-1][0:top], align='center')
+        # plt.yticks(range(top), features_names[::-1][0:top])
         plt.show()
 
 
@@ -40,9 +62,10 @@ def checkSVC():
     model = Context(FrameWorkSVM(clf, 'trainData26F.csv', 'testData26F.csv', param=parameter_space))
     # model.strategy.grid_search()
     accurancy_model = model.run_model()
+    data = model.strategy.getCsvData()
+    model.strategy.insertDataToCSV(data, "1")
 
     # pd.Series(abs(svm.coef_[0]), index=features.columns).nlargest(10).plot(kind='barh')
-
 
 checkSVC()
 
