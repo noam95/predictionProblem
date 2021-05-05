@@ -21,22 +21,35 @@ class FrameWorkSVM(Strategy):
     def train(self):
         super().train()
         print(self.accur)
-        print(confusion_matrix(self.y_test, self.prediction))
-        print(classification_report(self.y_test, self.prediction))
-        precision_recall_fscore_support(self.y_test, self.prediction, average='weighted')
-        self.prec = average_precision_score(self.y_test, self.prediction)
-        self.recall = recall_score(self.y_test, self.prediction, average='micro')
-        self.f_importances()
         return self.accur
 
-    def getCsvData(self):
-        parameters = self.param
-        parameters['accurancy'] = self.accur
-        df = pd.DataFrame(parameters.items()).T
-        df.columns = ['accurancy']
-        df = df.iloc[1:]
-        return df
+    def metrics(self):
+        scores = precision_recall_fscore_support(self.y_test, self.prediction, average='weighted')
+        self.prec = scores[0]
+        self.recall = scores[1]
+        self.f1 = scores[2]
+        self.f_importances()
+        # print(confusion_matrix(self.y_test, self.prediction))
+        # print(classification_report(self.y_test, self.prediction))
+        #  = average_precision_score(self.y_test, self.prediction)
+        # self.recall = recall_score(self.y_test, self.prediction, average='micro')
 
+    def getCsvData(self):
+        self.metrics()
+        train = self.x_test.columns.values
+        columnAsList = list(train)
+
+        data_df = {'Model name': ["SVM"],
+                   'Number of features': [len(columnAsList)],
+                   'Accurancy': [self.accur],
+                   'Precision': [self.prec],
+                   'Recall': [self.recall],
+                   'Fscore': [self.f1]
+                   }
+
+        # df = df.iloc[1:]
+        df = pd.DataFrame(data_df)
+        return df
 
     def f_importances(self):
         # top =2
@@ -51,7 +64,6 @@ class FrameWorkSVM(Strategy):
         # plt.barh(range(top), imp[::-1][0:top], align='center')
         # plt.yticks(range(top), features_names[::-1][0:top])
         plt.show()
-
 
 
 def checkSVC():
