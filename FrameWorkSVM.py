@@ -2,8 +2,8 @@ from Context import Strategy
 
 
 class FrameWorkSVM(Strategy):
-    def __init__(self, model, param):
-        super().__init__(model,param,"SVM")
+    def __init__(self, model,TrainPath,TestPath,param=None):
+        super().__init__(model,"SVM",TrainPath,TestPath, param)
 
 
     def do_algorithm(self):

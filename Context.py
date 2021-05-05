@@ -20,9 +20,9 @@ from os import path
 
 class Strategy(object):
 
-    def __init__(self, model, param,ModelName):
+    def __init__(self, model,ModelName,TrainPath,TestPath, param =None):
         self.model = model
-        self.x_train, self.y_train, self.x_test, self.y_test = self.get_x_train()
+        self.x_train, self.y_train, self.x_test, self.y_test = self.get_x_train(TrainPath,TestPath)
         self.prediction = None
         self.accur = None
         self.param = param
@@ -42,9 +42,9 @@ class Strategy(object):
     def analyze_model(self, model):
         pass
 
-    def get_x_train(self):
-        train = pd.read_csv("trainData26F.csv")
-        test = pd.read_csv("testData26F.csv")
+    def get_x_train(self,TrainPath,TestPath):
+        train = pd.read_csv(TrainPath)
+        test = pd.read_csv(TestPath)
         Fnum = len(train.columns)
         x_train = train.iloc[:, 0:Fnum - 1]
         y_train = train.iloc[:, Fnum - 1]
@@ -56,8 +56,7 @@ class Strategy(object):
         model_GS = GridSearchCV(self.model, self.param)
         self.model = model_GS
 
-    @abstractmethod
-    def insertDataToEXLS(self, df,name="1"):
+    def insertDataToCSV(self, df,name="1"):
         path = "plots/"+ self.ModelName +"_"+name+".csv"
         if path.exists(path):
             data_to_load = pd.read_csv(path)
