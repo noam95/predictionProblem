@@ -13,6 +13,7 @@ class FrameWorkANN(Strategy):
     def train(self):
         super().train()
         return self.accur
+
     def getFeatureImportance(self):
         '''
         optional: Feature inmportance
@@ -23,15 +24,16 @@ class FrameWorkANN(Strategy):
     def getCsvData(self):
 
         train = self.x_test.columns.values
-        parameters = self.param.items()
-        ListTitels = ['accurancy',]
-        columnAsList = list(train)
-        df = pd.DataFrame(parameters)
+        parameters = self.param
+        parameters['accurancy'] = self.accur
+        df = pd.DataFrame(parameters.items()).T
+        df.columns = ['hidden_layer_sizes','activation','solver','alpha','learning_rate','accurancy']
+        df = df.iloc[1:]
         return df
 
 
 def checkANN():
-    clf = MLPClassifier(hidden_layer_sizes=50)
+    clf = MLPClassifier()
     parameter_space = {
         'hidden_layer_sizes': [(50, 50, 50), (50, 100, 50), (100,)],
         'activation': ['tanh', 'relu'],
