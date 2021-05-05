@@ -2,7 +2,8 @@ from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from Context import Strategy, Context
 from matplotlib import pyplot as plt
-
+import numpy as np
+import seaborn as sns
 
 class FrameWorkRandomForest(Strategy):
 
@@ -21,6 +22,29 @@ class FrameWorkRandomForest(Strategy):
         pass
     def get_feature_importance(self, model):
         return self.model.feature_importances_
+
+    def plot_feature_importance(self,importance, names, model_type):
+        # Create arrays from feature importance and feature names
+        feature_importance = np.array(importance)
+        feature_names = np.array(names)
+
+        # Create a DataFrame using a Dictionary
+        data = {'feature_names': feature_names, 'feature_importance': feature_importance}
+        fi_df = pd.DataFrame(data)
+
+        # Sort the DataFrame in order decreasing feature importance
+        fi_df.sort_values(by=['feature_importance'], ascending=False, inplace=True)
+
+        # Define size of bar plot
+        plt.figure(figsize=(10, 8))
+        # Plot Searborn bar chart
+        sns.barplot(x=fi_df['feature_importance'], y=fi_df['feature_names'])
+        # Add chart labels
+        plt.title(model_type + 'FEATURE IMPORTANCE')
+        plt.xlabel('FEATURE IMPORTANCE')
+        plt.ylabel('FEATURE NAMES')
+        plt.show()
+
 
 
 def checkRandomForest():
@@ -41,6 +65,8 @@ def checkRandomForest():
         i += 1
 
     df = pd.DataFrame(data_df)
+    model.strategy.plot_feature_importance(importance, columns, 'RANDOM FOREST')
+
     # model.strategy.insertDataToCSV(df, "full_records")
     # zip_name = zip(columns, importance)
     # zip_name_sort = sorted(list(zip_name),key=lambda x:x[1],reverse=True)
