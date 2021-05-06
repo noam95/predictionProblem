@@ -39,6 +39,9 @@ class Strategy(object):
     @abstractmethod
     def get_feature_importance(self, model):
         pass
+    @abstractmethod
+    def plot_feature_importance(importance, names, model_type):
+        pass
 
     @abstractmethod
     def analyze_model(self, model):
