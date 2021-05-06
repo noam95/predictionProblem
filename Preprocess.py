@@ -119,7 +119,7 @@ def getTeamF(df, F, team_api_id):
     df = df[df['team_api_id'] == team_api_id]
     mean = df[F].mean()
 
-    if mean is None:
+    if str(mean) =='nan':
         return 0
     return mean
 
@@ -207,7 +207,7 @@ def orderData():
     query = dat.execute("SELECT " + tables + " From Match")
     cols = [column[0] for column in query.description]
     df = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
-    df = df[350:370]
+    # df = df[350:370]
     # fromXML(newMatch)
     df = addF(df,dat)
     df = resultCol(df)
