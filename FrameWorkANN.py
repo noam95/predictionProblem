@@ -15,6 +15,12 @@ class FrameWorkANN(Strategy):
         self.recall = None
         self.prec = None
         self.f1 = None
+        self.activation =None
+        self.solver = None
+        self.alpha = None
+        self.learning_rate= None
+        self.max_iter = None
+
 
     def train(self):
         super().train()
@@ -51,7 +57,7 @@ class FrameWorkANN(Strategy):
         columnAsList = list(train)
 
         #predictions measures
-        parameters = self.param
+        parameters ={}# self.param
         parameters['numOfF'] = len(columnAsList)
         self.getFMeasures()
         # self.get_feature_importance()
@@ -59,6 +65,12 @@ class FrameWorkANN(Strategy):
         parameters['precision'] = self.prec
         parameters['f1'] = self.f1
         parameters['accuracy'] = self.accur
+        parameters['activation'] = self.activation
+        parameters['solver'] = self.solver
+        parameters['alpha'] = self.alpha
+        parameters['learning_rate'] = self.learning_rate
+        parameters['max_iter'] = self.max_iter
+
 
         #columns names
         colums = list(parameters.keys())
@@ -69,27 +81,36 @@ class FrameWorkANN(Strategy):
 
 
 def checkANN():
+    activation = 'relu'
+    solver = 'adam'
+    alpha = 0.05
+    learning_rate = 'constant'
+    max_iter = 500
 
-
-
-    clf = MLPClassifier()
+    clf = MLPClassifier(activation=activation,solver=solver,alpha=alpha,learning_rate=learning_rate,max_iter=max_iter)
     parameter_space = {
         # 'hidden_layer_sizes': [(5,10,5),(15,),(5,5,5),(8,8),(100,5,100)],
         'activation': ['tanh', 'relu'],
-        # 'solver': ['sgd', 'adam'],
-        'alpha': [0.0001, 0.05],
-        # 'learning_rate': ['constant', 'invscaling', 'adaptive'],
-        # 'max_iter':[1,100]
+        'solver': ['sgd', 'adam'],
+        'alpha': [0.0001, 0.5],
+        'learning_rate': ['constant', 'invscaling', 'adaptive'],
+        'max_iter':[50,500]
     }
-    model = Context(FrameWorkANN(clf,'trainData47F.csv','TestData47F.csv',param=parameter_space))
-    model.strategy.x_train = SelectKBest(chi2, k=2).fit_transform(model.strategy.x_train, model.strategy.y_train)
+
+    model = Context(FrameWorkANN(clf, "trainData1.csv", "TestData1.csv", param=parameter_space))
+
+    model.strategy.activation = activation
+    model.strategy.solver = solver
+    model.strategy.alpha = alpha
+    model.strategy.learning_rate = learning_rate
+    model.strategy.max_iter = max_iter
+    model.strategy.x_train = SelectKBest(chi2, k=14).fit_transform(model.strategy.x_train, model.strategy.y_train)
     model.strategy.x_train = pd.DataFrame(model.strategy.x_train)
-    model.strategy.x_test = SelectKBest(chi2, k=2).fit_transform(model.strategy.x_test, model.strategy.y_test)
+    model.strategy.x_test = SelectKBest(chi2, k=14).fit_transform(model.strategy.x_test, model.strategy.y_test)
     model.strategy.x_test = pd.DataFrame(model.strategy.x_test)
-    model.strategy.grid_search()
+    # model.strategy.grid_search()
     model.run_model()
     data = model.strategy.getCsvData()
-    model.strategy.insertDataToCSV(data, "1")
-
+    model.strategy.insertDataToCSV(data, "decreseRows")
 
 checkANN()
