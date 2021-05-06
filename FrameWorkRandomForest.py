@@ -4,15 +4,25 @@ from Context import Strategy, Context
 from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
+from sklearn.metrics import precision_recall_fscore_support
 
 class FrameWorkRandomForest(Strategy):
 
     def __init__(self, model,TrainPath,TestPath,param=None):
-        super().__init__(model,"RanfomForest",TrainPath,TestPath, param)
+        super().__init__(model,"RanfomForest", TrainPath,TestPath, param)
+        self.recall = None
+        self.prec = None
+        self.f1 = None
 
     def train(self):
         super().train()
         return self.accur
+    def metrics(self):
+        scores = precision_recall_fscore_support(self.y_test, self.prediction, average='weighted')
+        self.prec = scores[0]
+        self.recall = scores[1]
+        self.f1 = scores[2]
+
 
     def removeFeatures(self):
         '''
@@ -50,14 +60,18 @@ class FrameWorkRandomForest(Strategy):
 def checkRandomForest():
     RandomForest = RandomForestClassifier(random_state=0)
     parameter_space = []
-    model = Context(FrameWorkRandomForest(RandomForest, "trainData26F_pass.csv", "TestData26F_pass.csv"))
+    model = Context(FrameWorkRandomForest(RandomForest, "train_data.csv", "test_data.csv"))
     accurancy_model = model.run_model()
     importance = RandomForest.feature_importances_
     train = model.strategy.x_train
     columns = train.columns.values
+    model.strategy.metrics()
     data_df = {'Model name': ["Random Forest"],
                 'Number of features': [len(columns)],
-                'Accurancy': [model.strategy.accur]
+                'Accuracy': [model.strategy.accur],
+                'Precision': [model.strategy.prec],
+                'Recall': [model.strategy.recall],
+                'Fscore': [model.strategy.f1]
                 }
     i = 0
     for col in columns[0:len(train.columns) - 1]:
@@ -65,16 +79,7 @@ def checkRandomForest():
         i += 1
 
     df = pd.DataFrame(data_df)
+    model.strategy.insertDataToCSV(df,"16records")
     model.strategy.plot_feature_importance(importance, columns, 'RANDOM FOREST')
-
-    # model.strategy.insertDataToCSV(df, "full_records")
-    # zip_name = zip(columns, importance)
-    # zip_name_sort = sorted(list(zip_name),key=lambda x:x[1],reverse=True)
-    # plt.bar(range(len(zip_name_sort)), [val[1] for val in zip_name], align='center')
-    # plt.xticks(range(len(zip_name)), [val[0] for val in zip_name])
-    # plt.xticks(rotation=90)
-    # plt.title("Random Forest - feature importance")
-    # plt.tight_layout()
-    # plt.show()
 
 checkRandomForest()
