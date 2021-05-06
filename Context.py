@@ -1,22 +1,7 @@
 from abc import abstractmethod
-from pathlib import Path
-
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectKBest
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.neural_network import MLPClassifier
-import numpy as np
-from sklearn.svm import SVC
-
-from Preprocess import resultCol
-from sklearn.feature_selection import chi2
-# import matplotlib as plt
-# from matplotlib import pyplot as plt
-import openpyxl
-from sklearn.feature_selection import SelectFromModel
-import os.path
 from os import path
 
 
@@ -30,6 +15,9 @@ class Strategy(object):
         self.param = param
         self.ModelName = ModelName
 
+    '''
+    this function uses the 2 method from sklearn - fit and prediction to train the model and predict test part
+    '''
     @abstractmethod
     def train(self):
         self.model.fit(self.x_train, self.y_train)
@@ -46,7 +34,9 @@ class Strategy(object):
     @abstractmethod
     def analyze_model(self, model):
         pass
-
+    '''
+    this function split features columns and labels column
+    '''
     def get_x_train(self,TrainPath,TestPath):
         train = pd.read_csv(TrainPath)
         test = pd.read_csv(TestPath)
@@ -60,7 +50,10 @@ class Strategy(object):
     def grid_search(self):
         model_GS = GridSearchCV(self.model, self.param)
         self.model = model_GS
-
+    '''
+    this function get data and file name to load all results :
+    measures, num of features
+    '''
     def insertDataToCSV(self, df,name="1"):
         file = "plots/"+ self.ModelName +"_"+name+".csv"
         if path.exists(file):

@@ -17,6 +17,9 @@ class FrameWorkRandomForest(Strategy):
     def train(self):
         super().train()
         return self.accur
+    '''
+    define the measures values
+    '''
     def metrics(self):
         scores = precision_recall_fscore_support(self.y_test, self.prediction, average='weighted')
         self.prec = scores[0]
@@ -56,11 +59,14 @@ class FrameWorkRandomForest(Strategy):
         plt.show()
 
 
-
+'''
+1.use frame work class to build a model type - random forest
+2.write to xl the results
+'''
 def checkRandomForest():
     RandomForest = RandomForestClassifier(random_state=0)
     parameter_space = []
-    model = Context(FrameWorkRandomForest(RandomForest, "train_data.csv", "test_data.csv"))
+    model = Context(FrameWorkRandomForest(RandomForest, "trainData.csv", "TestData.csv"))
     accurancy_model = model.run_model()
     importance = RandomForest.feature_importances_
     train = model.strategy.x_train
@@ -79,7 +85,7 @@ def checkRandomForest():
         i += 1
 
     df = pd.DataFrame(data_df)
-    model.strategy.insertDataToCSV(df,"16records")
+    model.strategy.insertDataToCSV(df,"results_det")
     model.strategy.plot_feature_importance(importance, columns, 'RANDOM FOREST')
 
 checkRandomForest()
