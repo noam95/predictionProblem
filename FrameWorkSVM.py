@@ -38,13 +38,16 @@ class FrameWorkSVM(Strategy):
         #  = average_precision_score(self.y_test, self.prediction)
         # self.recall = recall_score(self.y_test, self.prediction, average='micro')
 
+
     def grid_search(self):
         model_GS = GridSearchCV(self.model, self.param, cv=6)
         self.model = model_GS
 
 
 
-
+    '''
+    load data from csv to dataframe 
+    '''
     def getCsvData(self):
         self.metrics()
         train = self.x_test.columns.values
@@ -73,6 +76,9 @@ class FrameWorkSVM(Strategy):
         # train = self.x_test.columns.values
         return df
 
+    '''
+        Plots the importance values to graph
+    '''
     def f_importances(self):
         # top =2
         # features_names = ['defencePressure', 'buildUpPlaySpeed','buildUpPlayPassing','chanceCreationPassing','chanceCreationCrossing',
@@ -87,7 +93,11 @@ class FrameWorkSVM(Strategy):
         # plt.barh(range(top), imp[::-1][0:top], align='center')
         # plt.yticks(range(top), features_names[::-1][0:top])
         plt.show()
-
+'''
+1.use frame work class to build a model type - svc 
+2. define parameters of model
+2.write to xl the results
+'''
 
 def checkSVC():
     # clf = svm.SVC()
